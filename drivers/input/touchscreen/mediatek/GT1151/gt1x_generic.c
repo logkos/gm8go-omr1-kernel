@@ -22,7 +22,7 @@
 #include <linux/input.h>
 
 #include "include/gt1x_tpd_common.h"
-//#include "gt1x_config.h"
+#include "gt1x_config.h"
 
 #ifdef CONFIG_GTP_PROXIMITY
 #include <linux/hwmsensor.h>

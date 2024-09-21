@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 
+#include "mtk_secure_api.h"
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/slab.h>
@@ -33,7 +34,7 @@
 #include <linux/of_irq.h>
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
-#include "mtk_secure_api.h"
+
 
 #include <mtk_cpufreq_hybrid.h>
 #ifdef CONFIG_MTK_GPU_SPM_DVFS_SUPPORT
@@ -2061,11 +2062,11 @@ static int mt_i2c_resume_noirq(struct device *dev)
 				 __func__);
 
 		/* Disable rollback mode for multi-channel */
-		mt_secure_call(MTK_SIP_KERNEL_I2C_SEC_WRITE,
+		mt_secure_call(0x820002A0,
 			       i2c->id, V2_OFFSET_ROLLBACK, 0);
 
 		/* Enable multi-channel DMA mode */
-		mt_secure_call(MTK_SIP_KERNEL_I2C_SEC_WRITE, i2c->id,
+		mt_secure_call(0x820002A0, i2c->id,
 			       V2_OFFSET_MULTI_DMA, I2C_SHADOW_REG_MODE);
 
 		mt_i2c_clock_disable(i2c);
