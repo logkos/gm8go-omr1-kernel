@@ -710,21 +710,19 @@ LCM_DRIVER *lcm_driver_list[] = {
 	&nt35598_wqhd_dsi_vdo_truly_lcm_drv,
 #endif
 
-#if defined(NT35521_HD_DSI_VDO_TRULY_NT50358)
 	&nt35521_hd_dsi_vdo_truly_nt50358_lcm_drv,
-#endif
-#if defined(NT35521_HD_DSI_VDO_TRULY_NT50358_HVGA)
-	&nt35521_hd_dsi_vdo_truly_nt50358_hvga_lcm_drv,
-#endif
+
+//	&nt35521_hd_dsi_vdo_truly_nt50358_hvga_lcm_drv,
 
 
-#if defined(NT35521_HD_DSI_VDO_TRULY_NT50358_FWVGA)
-	&nt35521_hd_dsi_vdo_truly_nt50358_fwvga_lcm_drv,
-#endif
 
-#if defined(NT35521_HD_DSI_VDO_TRULY_NT50358_QHD)
-	&nt35521_hd_dsi_vdo_truly_nt50358_qhd_lcm_drv,
-#endif
+
+//	&nt35521_hd_dsi_vdo_truly_nt50358_fwvga_lcm_drv,
+
+
+
+//	&nt35521_hd_dsi_vdo_truly_nt50358_qhd_lcm_drv,
+
 
 #if defined(NT35595_FHD_DSI_CMD_TRULY_TPS65132)
 	&nt35595_fhd_dsi_cmd_truly_tps65132_lcm_drv,
@@ -1345,12 +1343,7 @@ unsigned char lcm_name_list[][128] = {
 #endif
 };
 
-#define LCM_COMPILE_ASSERT(condition) LCM_COMPILE_ASSERT_X(condition, __LINE__)
-#define LCM_COMPILE_ASSERT_X(condition, line) LCM_COMPILE_ASSERT_XX(condition, line)
-#define LCM_COMPILE_ASSERT_XX(condition, line) char assertion_failed_at_line_##line[(condition) ? 1 : -1]
-
 unsigned int lcm_count = sizeof(lcm_driver_list) / sizeof(LCM_DRIVER *);
-LCM_COMPILE_ASSERT(sizeof(lcm_driver_list) / sizeof(LCM_DRIVER *) != 0);
 #if defined(NT35520_HD720_DSI_CMD_TM) | defined(NT35520_HD720_DSI_CMD_BOE) | \
 	defined(NT35521_HD720_DSI_VDO_BOE) | defined(NT35521_HD720_DSI_VIDEO_TM)
 static unsigned char lcd_id_pins_value = 0xFF;

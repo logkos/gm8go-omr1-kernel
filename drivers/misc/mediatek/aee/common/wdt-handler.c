@@ -30,14 +30,15 @@
 #include <asm/stacktrace.h>
 #include <asm/memory.h>
 #include <asm/traps.h>
-#include <asm/fiq_smp_call.h>
+#include <asm/fiq_smp_call.h> 
 #include <mach/wd_api.h>
 #ifndef __aarch64__
-#include <smp.h>
+#include <asm/smp.h>
 #endif
 #include "aee-common.h"
 #include <ipanic.h>
 #include <mrdump_private.h>
+#include <mt-plat/mtk_ram_console.h>
 
 #undef WDT_DEBUG_VERBOSE
 /* #define WDT_DEBUG_VERBOSE */
@@ -171,7 +172,7 @@ void aee_wdt_printf(const char *fmt, ...)
 }
 
 
-#if defined(CONFIG_FIQ_GLUE)
+#ifdef CONFIG_FIQ_GLUE
 /* save registers in bin buffer, may comes from various cpu */
 static void aee_dump_cpu_reg_bin(int cpu, void *regs_ptr)
 {
@@ -372,7 +373,7 @@ void aee_smp_send_stop(void)
 	cpumask_clear_cpu(cpu, &mask);
 	/* mt_fiq_printf("\n fiq_smp_call_function\n"); */
 #ifndef CONFIG_TRUSTY_WDT_FIQ_ARMV7_SUPPORT
-	fiq_smp_call_function(aee_fiq_ipi_cpu_stop, NULL, 0);
+	//fiq_smp_call_function(aee_fiq_ipi_cpu_stop, NULL, 0);
 #endif
 
 	/* Wait up to one second for other CPUs to stop */
@@ -471,7 +472,7 @@ void aee_wdt_irq_info(void)
 	aee_exception_reboot();
 }
 
-#if defined(CONFIG_FIQ_GLUE)
+#ifdef CONFIG_FIQ_GLUE
 
 void aee_wdt_fiq_info(void *arg, void *regs, void *svc_sp)
 {
@@ -518,7 +519,7 @@ void aee_wdt_fiq_info(void *arg, void *regs, void *svc_sp)
 	aee_rr_rec_fiq_step(AEE_FIQ_STEP_WDT_FIQ_DONE);
 
 	/* FIXME: correct mrdump function if necessary */
-	__mrdump_create_oops_dump(AEE_REBOOT_MODE_WDT, regs, "WDT/HWT");
+//	__mrdump_create_oops_dump(AEE_REBOOT_MODE_WDT, regs, "WDT/HWT");
 
 	/* add info for minidump */
 	mrdump_mini_ke_cpu_regs(regs);

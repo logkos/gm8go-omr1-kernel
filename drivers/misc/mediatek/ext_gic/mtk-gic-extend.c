@@ -34,7 +34,7 @@
 #ifdef CONFIG_MTK_IN_HOUSE_TEE_SUPPORT
 #include <trustzone/kree/tz_irq.h>
 #endif
-#if defined(CONFIG_FIQ_GLUE)
+#ifdef CONFIG_FIQ_GLUE
 #include <asm/fiq.h>
 #include <asm/fiq_glue.h>
 #endif
@@ -313,7 +313,7 @@ void mt_irq_mask_for_sleep(unsigned int virq)
 	/* add memory barrier */
 	mb();
 }
-#if defined(CONFIG_FIQ_GLUE)
+#ifdef CONFIG_FIQ_GLUE
 
 #ifdef NR_IRQS
 #undef NR_IRQS

@@ -31,8 +31,8 @@
 #include <asm/pgtable.h>
 #include <asm/processor.h>
 #include <mach/wd_api.h>
-#if defined(CONFIG_FIQ_GLUE)
-#include <mt-plat/fiq_smp_call.h>
+#ifdef CONFIG_FIQ_GLUE
+#include <asm/fiq_smp_call.h>
 #endif
 #include <mrdump.h>
 #include <linux/kdebug.h>
@@ -109,7 +109,7 @@ static void crash_save_cpu(struct pt_regs *regs, int cpu)
 	final_note(buf);
 }
 
-#if defined(CONFIG_FIQ_GLUE)
+#ifdef CONFIG_FIQ_GLUE
 
 static void aee_kdump_cpu_stop(void *arg, void *regs, void *svc_sp)
 {

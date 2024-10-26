@@ -76,7 +76,7 @@ extern void __iomem *get_dist_base(void);
 extern u32 mt_irq_get_en_hw(unsigned int hwirq);
 #endif
 
-#if defined(CONFIG_FIQ_GLUE)
+#ifdef CONFIG_FIQ_GLUE
 int request_fiq(int irq, fiq_isr_handler handler, unsigned long irq_flags, void *arg);
 void irq_raise_softirq(const struct cpumask *mask, unsigned int irq);
 #endif

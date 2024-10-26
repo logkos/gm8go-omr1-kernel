@@ -15,7 +15,7 @@
 #define __MTK_MEMINFO_H__
 #include <linux/cma.h>
 #include <linux/of_reserved_mem.h>
-#include <asm/pgtable-types.h>
+//#include <asm/pgtable-types.h>
 
 /* physical offset */
 extern phys_addr_t get_phys_offset(void);

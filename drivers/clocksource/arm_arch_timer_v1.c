@@ -25,9 +25,11 @@
 #include <linux/acpi.h>
 
 #include <asm/arch_timer.h>
+#include <clocksource/arm_arch_timer.h>
+
 #include <asm/virt.h>
 
-#include <clocksource/arm_arch_timer.h>
+
 
 #define CNTTIDR		0x08
 #define CNTTIDR_VIRT(n)	(BIT(1) << ((n) * 4))

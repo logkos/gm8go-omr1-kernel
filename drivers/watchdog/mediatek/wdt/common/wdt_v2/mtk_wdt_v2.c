@@ -43,6 +43,7 @@
 
 #include <mach/wd_api.h>
 #include <linux/irqchip/mtk-eic.h>
+#include <linux/irqchip/mtk-gic-extend.h>
 
 #ifndef __USING_DUMMY_WDT_DRV__
 #include <mt-plat/upmu_common.h>
@@ -83,7 +84,7 @@ static void spm_wdt_init(void);
 static DEFINE_SPINLOCK(rgu_reg_operation_spinlock);
 static int wdt_last_timeout_val;
 static int wdt_enable = 1;
-static bool wdt_intr_has_trigger; /* For test use */
+static int wdt_intr_has_trigger; /* For test use */
 
 #ifndef CONFIG_KICK_SPM_WDT
 static unsigned int timeout;
@@ -885,7 +886,7 @@ get_wd_api(&wd_api);
 	aee_wdt_dump_reg();
     #endif
 
-	aee_wdt_fiq_info(arg, regs, svc_sp);
+	//aee_wdt_fiq_info(arg, regs, svc_sp);
 }
 #else /* CONFIG_FIQ_GLUE */
 static irqreturn_t mtk_wdt_isr(int irq, void *dev_id)

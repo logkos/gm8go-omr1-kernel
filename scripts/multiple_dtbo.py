@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2016 MediaTek Inc.
@@ -52,14 +52,11 @@ def write_header(output_file, input_file, dtb_list):
 		head[8 + i] = struct.pack('I', offset)
 		i = i + 1
 
-	with open(output_file, 'w') as fo:
+	with open(output_file, 'wb') as fo:
 		for item in head:
-			fo.write("%s" % item)
-		with open(input_file, 'r') as fi:
-			for line in fi.readlines():
-				fo.write(line)
-			fi.close
-		fo.close
+			fo.write(item)
+		with open(input_file, 'rb') as fi:
+			fo.write(fi.read())
 
 def main(argv):
 	if len(argv) < 2:

@@ -30,7 +30,7 @@
 #ifdef CONFIG_GTP_REQUEST_FW_UPDATE
 #include <linux/firmware.h>
 #endif
-//#include "gt1x_config.h"
+#include "gt1x_config.h"
 #include "include/gt1x_tpd_common.h"
 #ifdef CONFIG_GTP_HEADER_FW_UPDATE
 #include "gt1x_firmware.h"
