@@ -1847,36 +1847,6 @@ void disp_get_fb_address(unsigned long *fbVirAddr, unsigned long *fbPhysAddr)
 
 char *mtkfb_find_lcm_driver(void)
 {
-
-#ifdef CONFIG_OF
-	if (_parse_tag_videolfb() == 1) {
-		pr_debug("[mtkfb] not found LCM driver, return NULL\n");
-		return NULL;
-	}
-#else
-	{
-		char *p, *q;
-
-		p = strstr(saved_command_line, "lcm=");
-		/* we can't find lcm string in the command line, the uboot should be old version */
-		if (p == NULL)
-			return NULL;
-
-		p += 6;
-		if ((p - saved_command_line) > strlen(saved_command_line + 1))
-			return NULL;
-
-		pr_debug("%s, %s\n", __func__, p);
-		q = p;
-		while (*q != ' ' && *q != '\0')
-			q++;
-
-		memset((void *)mtkfb_lcm_name, 0, sizeof(mtkfb_lcm_name));
-		strncpy((char *)mtkfb_lcm_name, (const char *)p, (int)(q - p));
-		mtkfb_lcm_name[q - p + 1] = '\0';
-	}
-#endif
-	/* printk("%s, %s\n", __func__, mtkfb_lcm_name); */
 	return mtkfb_lcm_name;
 }
 

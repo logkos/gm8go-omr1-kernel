@@ -3326,22 +3326,7 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps, int is_lcm_inited
 	data_config->dst_w = disp_helper_get_option(DISP_OPT_FAKE_LCM_WIDTH);
 	data_config->dst_h = disp_helper_get_option(DISP_OPT_FAKE_LCM_HEIGHT);
 	data_config->p_golden_setting_context = get_golden_setting_pgc();
-
-	if (lcm_param->type == LCM_TYPE_DSI) {
-		if (lcm_param->dsi.data_format.format == LCM_DSI_FORMAT_RGB888)
-			data_config->lcm_bpp = 24;
-		else if (lcm_param->dsi.data_format.format == LCM_DSI_FORMAT_RGB565)
-			data_config->lcm_bpp = 16;
-		else if (lcm_param->dsi.data_format.format == LCM_DSI_FORMAT_RGB666)
-			data_config->lcm_bpp = 18;
-	} else if (lcm_param->type == LCM_TYPE_DPI) {
-		if (lcm_param->dpi.format == LCM_DPI_FORMAT_RGB888)
-			data_config->lcm_bpp = 24;
-		else if (lcm_param->dpi.format == LCM_DPI_FORMAT_RGB565)
-			data_config->lcm_bpp = 16;
-		if (lcm_param->dpi.format == LCM_DPI_FORMAT_RGB666)
-			data_config->lcm_bpp = 18;
-	}
+	data_config->lcm_bpp = 24;
 
 	data_config->fps = lcm_fps;
 	data_config->dst_dirty = 1;
@@ -5864,29 +5849,29 @@ int primary_display_is_sleepd(void)
 int primary_display_get_width(void)
 {
 	if (pgc->plcm == NULL) {
-		DISPERR("lcm handle is null\n");
-		return 0;
+		DISPERR("lcm handle is null \n");
+		return NULL;
 	}
 
 	if (pgc->plcm->params)
 		return pgc->plcm->params->width;
 
-	DISPERR("lcm_params is null!\n");
-	return 0;
+	DISPERR("lcm_params is null !\n");
+	return NULL;
 }
 
 int primary_display_get_height(void)
 {
 	if (pgc->plcm == NULL) {
 		DISPERR("lcm handle is null\n");
-		return 0;
+		return NULL;
 	}
 
 	if (pgc->plcm->params)
 		return pgc->plcm->params->height;
 
 	DISPERR("lcm_params is null!\n");
-	return 0;
+	return NULL;
 }
 
 int primary_display_get_virtual_width(void)
@@ -5965,12 +5950,12 @@ int primary_display_get_info(struct disp_session_info *info)
 	struct disp_session_info *dispif_info = (struct disp_session_info *)info;
 	LCM_PARAMS *lcm_param = disp_lcm_get_params(pgc->plcm);
 
+	memset((void *)dispif_info, 0, sizeof(struct disp_session_info));
+
 	if (lcm_param == NULL) {
 		DISPERR("lcm_param is null\n");
 		return -1;
 	}
-
-	memset((void *)dispif_info, 0, sizeof(struct disp_session_info));
 
 	if (is_DAL_Enabled())
 		dispif_info->maxLayerNum = pgc->max_layer - 1;
@@ -5979,7 +5964,7 @@ int primary_display_get_info(struct disp_session_info *info)
 
 	dispif_info->const_layer_num = 0;
 
-	switch (lcm_param->type) {
+	switch (LCM_TYPE_DSI) {
 	case LCM_TYPE_DBI:
 		{
 			dispif_info->displayType = DISP_IF_TYPE_DBI;
