@@ -33,8 +33,8 @@
 
 	/* chosen */
 	chosen: chosen {
-		bootargs = "console=tty0 earlycon=ttyMT0,921600n1 root=/dev/ram initrd=0x44000000,\
-0x1000000 ";
+		bootargs = "console=tty0 console=ttyMT0,921600n1 root=/dev/ram initrd=0x44000000,\
+0x1000000 loglevel=8 androidboot.selinux=permissive";
 	};
 
 
