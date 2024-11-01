@@ -215,11 +215,11 @@ MODULE_LICENSE("GPL");
 static const unsigned char LCD_MODULE_ID = 0x01;
 #define LCM_DSI_CMD_MODE									0
 #define FRAME_WIDTH										(720)
-#define FRAME_HEIGHT									(1280)
+#define FRAME_HEIGHT									(1440)
 #define LCM_DENSITY										(320)
 
-#define LCM_PHYSICAL_WIDTH									(0)
-#define LCM_PHYSICAL_HEIGHT									(0)
+#define LCM_PHYSICAL_WIDTH									(68040)
+#define LCM_PHYSICAL_HEIGHT									(134000)
 
 
 #ifndef CONFIG_FPGA_EARLY_PORTING
@@ -525,7 +525,7 @@ static void lcm_get_params(LCM_PARAMS *params)
 #endif
 	params->dsi.CLK_HS_POST = 36;
 	params->dsi.clk_lp_per_line_enable = 0;
-	params->dsi.esd_check_enable = 1;
+	params->dsi.esd_check_enable = 0;
 	params->dsi.customization_esd_check_enable = 0;
 	params->dsi.lcm_esd_check_table[0].cmd = 0x0A;
 	params->dsi.lcm_esd_check_table[0].count = 1;
