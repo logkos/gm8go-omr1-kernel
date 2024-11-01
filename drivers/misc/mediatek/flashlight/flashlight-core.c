@@ -839,11 +839,46 @@ static int flashlight_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
+static int flashlight_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+{
+	int mode = 0;
+    struct flashlight_dev *fdev;
+    char *kbuf;
+    ssize_t retval = count;
+
+    kbuf = kmalloc(count, GFP_KERNEL);
+    if (!kbuf)
+        return -ENOMEM;
+
+    if (copy_from_user(kbuf, buf, count)) {
+        kfree(kbuf);
+        return -EFAULT;
+    }
+
+    mutex_lock(&fl_mutex);
+    list_for_each_entry(fdev, &flashlight_list, node) {
+        if (!fdev->ops)
+            continue;
+		if(kbuf[0] == '1')
+			mode = 1;
+
+        pr_debug("Write(%d,%d,%d)\n",
+                 fdev->dev_id.type, fdev->dev_id.ct, fdev->dev_id.part);
+        fl_enable(fdev, mode);
+    }
+    mutex_unlock(&fl_mutex);
+
+    kfree(kbuf);
+    return retval;
+}
+
+
 static const struct file_operations flashlight_fops = {
 	.owner = THIS_MODULE,
 	.unlocked_ioctl = flashlight_ioctl,
 	.open = flashlight_open,
 	.release = flashlight_release,
+	.write = flashlight_write,
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = flashlight_compat_ioctl,
 #endif
