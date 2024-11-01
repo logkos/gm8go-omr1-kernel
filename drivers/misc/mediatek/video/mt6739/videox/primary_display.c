@@ -4091,22 +4091,22 @@ int primary_display_resume(void)
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume, MMPROFILE_FLAG_START, 0, 0);
 
 	_primary_path_lock(__func__);
-	if (pgc->state == DISP_ALIVE) {
+	/*if (pgc->state == DISP_ALIVE) {
 		DISPCHECK("primary display path is already resume, skip\n");
 		goto done;
-	}
+	}*/
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_resume, MMPROFILE_FLAG_PULSE, 0, 1);
 
 	if (is_ipoh_bootup) {
 		DISPCHECK("[primary display path] leave primary_display_resume -- IPOH\n");
 		DISPCHECK("ESD check start[begin]\n");
-		primary_display_esd_check_enable(1);
+		//primary_display_esd_check_enable(1);
 		DISPCHECK("ESD check start[end]\n");
 		is_ipoh_bootup = false;
 		DISPDBG("[POWER]start cmdq[begin]--IPOH\n");
 		if (disp_helper_get_option(DISP_OPT_USE_CMDQ))
 			_cmdq_start_trigger_loop();
-		enable_idlemgr(1);
+		//enable_idlemgr(1);
 		DISPDBG("[POWER]start cmdq[end]--IPOH\n");
 		/* pgc->state = DISP_ALIVE; */
 		goto done;
@@ -4882,197 +4882,6 @@ static int evaluate_bandwidth_save(struct disp_ddp_path_config *cfg, int *ori, i
 	return 0;
 }
 
-#ifdef CONFIG_MTK_ROUND_CORNER_SUPPORT
-unsigned int full_content;
-unsigned int corner_pattern_height_bot;
-
-int primary_display_get_corner_full_content(void)
-{
-	if (pgc->plcm == NULL) {
-		DISPERR("lcm handle is null\n");
-		return 0;
-	}
-
-	if (pgc->plcm->params)
-		return pgc->plcm->params->full_content;
-
-	DISPERR("lcm_params is null!\n");
-	return 0;
-}
-int primary_display_get_corner_pattern_height_bot(void)
-{
-	if (pgc->plcm == NULL) {
-		DISPERR("lcm handle is null\n");
-		return 0;
-	}
-
-	if (pgc->plcm->params)
-		return pgc->plcm->params->corner_pattern_height_bot;
-
-	DISPERR("lcm_params is null!\n");
-	return 0;
-}
-
-
-int primary_display_get_corner_pattern_width(void)
-{
-	if (pgc->plcm == NULL) {
-		DISPERR("lcm handle is null\n");
-		return 0;
-	}
-
-	if (pgc->plcm->params)
-		return pgc->plcm->params->corner_pattern_width;
-
-	DISPERR("lcm_params is null!\n");
-	return 0;
-}
-
-int primary_display_get_corner_pattern_height(void)
-{
-	if (pgc->plcm == NULL) {
-		DISPERR("lcm handle is null\n");
-		return 0;
-	}
-
-	if (pgc->plcm->params)
-		return pgc->plcm->params->corner_pattern_height;
-
-	DISPERR("lcm_params is null!\n");
-	return 0;
-}
-
-
-int primary_display_get_round_corner_mva(unsigned int *top_mva, unsigned int *bottom_mva,
-				unsigned int *pitch, unsigned int *height, unsigned int *height_bot)
-{
-	unsigned char ret = -1;
-	unsigned char argb444_bpp = 2;
-	unsigned int bt_size = 0;
-	unsigned int corner_size = 0;
-	unsigned int dal_buf_size = DAL_GetLayerSize();
-	unsigned int frame_buf_size = DISP_GetFBRamSize();
-	unsigned int  vram_buf_size = mtkfb_get_fb_size();
-	unsigned long  frame_buf_mva = primary_display_get_frame_buffer_mva_address();
-
-	if (vram_buf_size > dal_buf_size + frame_buf_size) {
-		*height_bot = primary_display_get_corner_pattern_height_bot();
-		*height = primary_display_get_corner_pattern_height();
-		*pitch = primary_display_get_width();
-		bt_size = (*pitch) * (*height_bot) * argb444_bpp;
-		corner_size = (*pitch) * (*height) * argb444_bpp;
-
-		if (full_content) {
-			*top_mva = frame_buf_mva + vram_buf_size - corner_size;
-			*bottom_mva = frame_buf_mva + vram_buf_size - corner_size - bt_size;
-		} else {
-			*top_mva = frame_buf_mva + vram_buf_size - 2 * corner_size;
-			*bottom_mva = *top_mva + corner_size;
-		}
-		ret = 0;
-	} else {
-		DISPERR("vram_buf may not contain corner size!\n");
-	}
-
-	return ret;
-}
-void primary_display_set_round_corner_layers(struct disp_ddp_path_config *cfg)
-{
-	int ret = 0;
-	static unsigned char init_corner;
-	static unsigned int pitch;
-	static unsigned int h;
-	static unsigned int h_bot;
-	static unsigned int top_mva, bottom_mva;
-	struct OVL_CONFIG_STRUCT *input_phy, *input_ext;
-	/* by chip */
-	int phy_layer_idx = 3;
-	int phy_layer_id = PRIMARY_SESSION_INPUT_LAYER_COUNT;
-	int ext_layer_id = phy_layer_id + 1;
-	enum DISP_MODULE_ENUM module = DISP_MODULE_OVL0;
-
-	full_content = primary_display_get_corner_full_content();
-	if (unlikely(init_corner == 0)) {
-		ret = primary_display_get_round_corner_mva(&top_mva, &bottom_mva, &pitch, &h, &h_bot);
-		init_corner = 1;
-	}
-	if (ret || h == 0 || h > (primary_display_get_height()>>1)) {
-		DISPERR("round corner init fail: ret:%d, h:%u\n", ret, h);
-		return;
-	}
-
-	input_phy = &(cfg->ovl_config[phy_layer_id]);
-	input_phy->ovl_index = module;
-	input_phy->layer = phy_layer_id;
-	input_phy->isDirty = 1;
-	input_phy->buff_idx = -1;
-	input_phy->layer_en = 1;
-	input_phy->fmt = UFMT_RGBA4444;
-	input_phy->addr = (unsigned long)top_mva;
-	input_phy->const_bld = 0;
-	input_phy->src_x = 0;
-	input_phy->src_y = 0;
-	input_phy->src_w = pitch;
-	input_phy->src_h = h;
-	input_phy->src_pitch = pitch*2;
-	input_phy->dst_x = 0;
-	input_phy->dst_y = 0;
-	input_phy->dst_w = pitch;
-	input_phy->dst_h = h;
-	input_phy->aen = 1;
-	input_phy->sur_aen = 1;
-	input_phy->alpha = 255;
-	input_phy->keyEn = 0;
-	input_phy->key = 0;
-	input_phy->src_alpha = 1;
-	input_phy->dst_alpha = 2;
-	input_phy->source = OVL_LAYER_SOURCE_MEM;
-	input_phy->security = 0;
-	input_phy->yuv_range = 0;
-	input_phy->ext_layer = -1;
-	input_phy->ext_sel_layer = -1;
-	input_phy->phy_layer = phy_layer_idx;
-
-	input_ext = &(cfg->ovl_config[ext_layer_id]);
-	input_ext->ovl_index = module;
-	input_ext->layer = ext_layer_id;
-	input_ext->isDirty = 1;
-	input_ext->buff_idx = -1;
-	input_ext->layer_en = 1;
-	input_ext->fmt = UFMT_RGBA4444;
-	input_ext->addr = (unsigned long)bottom_mva;
-	input_ext->const_bld = 0;
-	input_ext->src_x = 0;
-	input_ext->src_y = 0;
-	input_ext->src_w = pitch;
-	input_ext->src_h = h;
-	input_ext->src_pitch = pitch*2;
-	input_ext->dst_x = 0;
-	input_ext->dst_y = primary_display_get_height() - h;
-	input_ext->dst_w = pitch;
-	input_ext->dst_h = h;
-	input_ext->aen = 1;
-	input_ext->sur_aen = 1;
-	input_ext->alpha = 255;
-	input_ext->keyEn = 0;
-	input_ext->key = 0;
-	input_ext->src_alpha = 1;
-	input_ext->dst_alpha = 2;
-	input_ext->source = OVL_LAYER_SOURCE_MEM;
-	input_ext->security = 0;
-	input_ext->yuv_range = 0;
-	input_ext->ext_layer = 2;
-	input_ext->ext_sel_layer = 3;
-	input_ext->phy_layer = phy_layer_idx;
-
-	if (full_content) {
-	input_ext->src_h = h_bot;
-	input_ext->dst_y = primary_display_get_height() - h_bot;
-	input_ext->dst_h = h_bot;
-	}
-}
-#endif
-
 static int _config_ovl_input(struct disp_frame_cfg_t *cfg,
 			     disp_path_handle disp_handle, struct cmdqRecStruct *cmdq_handle)
 {
@@ -5103,7 +4912,7 @@ static int _config_ovl_input(struct disp_frame_cfg_t *cfg,
 		ovl_cfg = &(data_config->ovl_config[layer]);
 		if (cfg->setter != SESSION_USER_AEE) {
 			if (is_DAL_Enabled() && layer == primary_display_get_option("ASSERT_LAYER")) {
-				DISPMSG("skip AEE layer %d\n", layer);
+				//DISPMSG("skip AEE layer %d\n", layer);
 				continue;
 			}
 		} else {
@@ -5850,7 +5659,7 @@ int primary_display_get_width(void)
 {
 	if (pgc->plcm == NULL) {
 		DISPERR("lcm handle is null \n");
-		return NULL;
+		return 0;
 	}
 
 	if (pgc->plcm->params)
@@ -5864,14 +5673,14 @@ int primary_display_get_height(void)
 {
 	if (pgc->plcm == NULL) {
 		DISPERR("lcm handle is null\n");
-		return NULL;
+		return 0;
 	}
 
 	if (pgc->plcm->params)
 		return pgc->plcm->params->height;
 
 	DISPERR("lcm_params is null!\n");
-	return NULL;
+	return 0;
 }
 
 int primary_display_get_virtual_width(void)
@@ -6339,7 +6148,7 @@ int primary_display_setbacklight(unsigned int level)
 	_primary_path_lock(__func__);
 #endif
 	if (pgc->state == DISP_SLEPT) {
-		DISPERR("Sleep State set backlight invald\n");
+		DISPERR("Sleep State set backlight invalid\n");
 	} else {
 		primary_display_idlemgr_kick(__func__, 0);
 		if (primary_display_cmdq_enabled()) {
@@ -6381,7 +6190,7 @@ int _set_lcm_cmd_by_cmdq(unsigned int *lcm_cmd, unsigned int *lcm_count, unsigne
 	if (primary_display_is_video_mode()) {
 		mmprofile_log_ex(ddp_mmp_get_events()->primary_set_cmd, MMPROFILE_FLAG_PULSE, 1, 2);
 		cmdqRecReset(cmdq_handle_lcm_cmd);
-		disp_lcm_set_lcm_cmd(pgc->plcm, cmdq_handle_lcm_cmd, lcm_cmd, lcm_count, lcm_value);
+		disp_lcm_set_lcm_cmd(pgc->plcm, cmdq_handle_lcm_cmd, lcm_cmd, lcm_count, &lcm_value);
 		_cmdq_flush_config_handle_mira(cmdq_handle_lcm_cmd, 1);
 		DISPCHECK("[CMD]_set_lcm_cmd_by_cmdq ret=%d\n", ret);
 	} else {
@@ -6390,7 +6199,7 @@ int _set_lcm_cmd_by_cmdq(unsigned int *lcm_cmd, unsigned int *lcm_count, unsigne
 		_cmdq_handle_clear_dirty(cmdq_handle_lcm_cmd);
 		_cmdq_insert_wait_frame_done_token_mira(cmdq_handle_lcm_cmd);
 
-		disp_lcm_set_lcm_cmd(pgc->plcm, cmdq_handle_lcm_cmd, lcm_cmd, lcm_count, lcm_value);
+		disp_lcm_set_lcm_cmd(pgc->plcm, cmdq_handle_lcm_cmd, lcm_cmd, lcm_count, &lcm_value);
 		cmdqRecSetEventToken(cmdq_handle_lcm_cmd, CMDQ_SYNC_TOKEN_CONFIG_DIRTY);
 		mmprofile_log_ex(ddp_mmp_get_events()->primary_set_cmd, MMPROFILE_FLAG_PULSE, 1, 4);
 		_cmdq_flush_config_handle_mira(cmdq_handle_lcm_cmd, 1);
@@ -7012,6 +6821,7 @@ static int Panel_Master_primary_display_config_dsi(const char *name, UINT32 conf
 int fbconfig_get_esd_check_test(UINT32 dsi_id, UINT32 cmd, UINT8 *buffer, UINT32 num)
 {
 	int ret = 0;
+	return ret;
 
 	_primary_path_lock(__func__);
 	if (pgc->state == DISP_SLEPT) {
@@ -7054,7 +6864,7 @@ int fbconfig_get_esd_check_test(UINT32 dsi_id, UINT32 cmd, UINT8 *buffer, UINT32
 	cmdqCoreSetEvent(CMDQ_EVENT_DISP_WDMA0_EOF);
 	DISPCHECK("[ESD]start cmdq trigger loop[end]\n");
 	disp_irq_esd_cust_bycmdq(1);
-	primary_display_esd_check_enable(1);
+	//primary_display_esd_check_enable(1);
 
 	mmprofile_log_ex(ddp_mmp_get_events()->esd_check_t, MMPROFILE_FLAG_END, buffer[0], -1);
 	_primary_path_unlock(__func__);

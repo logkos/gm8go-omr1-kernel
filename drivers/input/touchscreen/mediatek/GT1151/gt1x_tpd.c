@@ -701,59 +701,24 @@ static irqreturn_t tpd_eint_interrupt_handler(unsigned irq, struct irq_desc *des
 static int tpd_history_x, tpd_history_y;
 void gt1x_touch_down(s32 x, s32 y, s32 size, s32 id)
 {
-#ifdef CONFIG_GTP_CHANGE_X2Y
-	GTP_SWAP(x, y);
-#endif
-#ifndef CONFIG_GTP_ICS_SLOT_REPORT
-#ifdef CONFIG_CUSTOM_LCM_X
-	unsigned long lcm_x = 0, lcm_y = 0;
-	int ret;
-#endif
-#endif
-	input_report_key(tpd->dev, BTN_TOUCH, 1);
-#ifdef CONFIG_GTP_ICS_SLOT_REPORT
 	input_mt_slot(tpd->dev, id);
+	input_report_key(tpd->dev, BTN_TOUCH, 1);
 	input_report_abs(tpd->dev, ABS_MT_PRESSURE, size);
-	input_report_abs(tpd->dev, ABS_MT_TOUCH_MAJOR, size);
-	input_report_abs(tpd->dev, ABS_MT_TRACKING_ID, id);
+	input_report_abs(tpd->dev, ABS_MT_TOUCH_MAJOR, 1);
 	input_report_abs(tpd->dev, ABS_MT_POSITION_X, x);
 	input_report_abs(tpd->dev, ABS_MT_POSITION_Y, y);
-#else
-	if ((!size) && (!id)) {
-		/* for virtual button */
-		input_report_abs(tpd->dev, ABS_MT_PRESSURE, 100);
-		input_report_abs(tpd->dev, ABS_MT_TOUCH_MAJOR, 100);
-	} else {
-		input_report_abs(tpd->dev, ABS_MT_PRESSURE, size);
-		input_report_abs(tpd->dev, ABS_MT_TOUCH_MAJOR, size);
-		input_report_abs(tpd->dev, ABS_MT_TRACKING_ID, id);
-	}
-#ifdef CONFIG_CUSTOM_LCM_X
-	ret = kstrtoul(CONFIG_CUSTOM_LCM_X, 0, &lcm_x);
-	if (ret)
-		GTP_ERROR("Touch down get lcm_x failed");
-	ret = kstrtoul(CONFIG_CUSTOM_LCM_Y, 0, &lcm_y);
-	if (ret)
-		GTP_ERROR("Touch down get lcm_y failed");
-
-	if (x < lcm_x)
-		x = 0;
-	else
-		x = x - lcm_x;
-	if (y < lcm_y)
-		y = 0;
-	else
-		y = y - lcm_y;
-
-	GTP_DEBUG("x:%d, y:%d, lcm_x:%lu, lcm_y:%lu", x, y, lcm_x, lcm_y);
-
-#endif
-	input_report_abs(tpd->dev, ABS_MT_POSITION_X, x);
-	input_report_abs(tpd->dev, ABS_MT_POSITION_Y, y);
+	input_report_abs(tpd->dev,  ABS_MT_TRACKING_ID, id);
 	input_mt_sync(tpd->dev);
-#endif
+	TPD_EM_PRINT(x, y, x, y, id-1, 1);
+
 	TPD_DEBUG_SET_TIME;
-	TPD_EM_PRINT(x, y, x, y, id, 1);
+	if(y > TPD_RES_Y) //virtual key debounce to avoid android ANR issue
+	 {
+         msleep(50);
+		 //printk("D virtual key \n");
+	 }
+
+
 	tpd_history_x = x;
 	tpd_history_y = y;
 #ifdef CONFIG_MTK_BOOT
@@ -766,14 +731,11 @@ void gt1x_touch_down(s32 x, s32 y, s32 size, s32 id)
 
 void gt1x_touch_up(s32 id)
 {
-#ifdef CONFIG_GTP_ICS_SLOT_REPORT
 	input_mt_slot(tpd->dev, id);
-	input_report_abs(tpd->dev, ABS_MT_TRACKING_ID, -1);
-#else
+	input_report_key(tpd->dev, BTN_TOUCH, 0);
 	input_mt_sync(tpd->dev);
-#endif
 	TPD_DEBUG_SET_TIME;
-	TPD_EM_PRINT(tpd_history_x, tpd_history_y, tpd_history_x, tpd_history_y, id, 0);
+	TPD_EM_PRINT(tpd_history_x, tpd_history_y, tpd_history_x, tpd_history_y, 0, 0);
 	tpd_history_x = 0;
 	tpd_history_y = 0;
 #ifdef CONFIG_MTK_BOOT
