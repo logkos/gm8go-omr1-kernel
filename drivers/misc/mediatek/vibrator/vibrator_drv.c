@@ -27,6 +27,7 @@
 #include <linux/types.h>
 #include <linux/device.h>
 #include <linux/workqueue.h>
+#include <linux/input.h>
 
 #include "timed_output.h"
 
@@ -97,7 +98,7 @@ static spinlock_t vibe_lock;
 static int vibe_state;
 static int ldo_state;
 static int shutdown_flag;
-
+static struct input_dev *ff_dev;
 static int vibr_Enable(void)
 {
 	if (!ldo_state) {
@@ -132,6 +133,23 @@ static int vibrator_get_time(struct timed_output_dev *dev)
 		return ktime_to_ms(r);
 	} else
 		return 0;
+}
+
+static void vib_shutdown(struct platform_device *pdev)
+{
+	unsigned long flags;
+
+	VIB_DEBUG("vib_shutdown: enter!\n");
+	spin_lock_irqsave(&vibe_lock, flags);
+	shutdown_flag = 1;
+	if (vibe_state) {
+		VIB_DEBUG("vib_shutdown: vibrator will disable\n");
+		vibe_state = 0;
+		spin_unlock_irqrestore(&vibe_lock, flags);
+		vibr_Disable();
+	} else {
+		spin_unlock_irqrestore(&vibe_lock, flags);
+	}
 }
 
 static void vibrator_enable(struct timed_output_dev *dev, int value)
@@ -195,6 +213,66 @@ static const struct of_device_id vibr_of_ids[] = {
 	{}
 };
 
+//FF code
+static int vibrator_play_effect(struct input_dev *dev, void *data, struct ff_effect *effect)
+{
+	if (effect->type == FF_RUMBLE) {
+		int duration = effect->replay.length;
+
+		// Cap duration to prevent accidental long vibrations
+		duration = min(duration, 15000);
+
+		// Lock for accessing shared resources safely
+		unsigned long flags;
+		spin_lock_irqsave(&vibe_lock, flags);
+
+		// Start the timer to manage vibration duration
+		vibe_state = 1;
+		hrtimer_start(&vibe_timer, ktime_set(duration / 1000, (duration % 1000) * 1000000), HRTIMER_MODE_REL);
+		spin_unlock_irqrestore(&vibe_lock, flags);
+
+		// Queue work to update vibration state
+		queue_work(vibrator_queue, &vibrator_work);
+	}
+
+	return 0;
+}
+
+
+static int init_ff_device(void)
+{
+	int ret;
+
+	ff_dev = input_allocate_device();
+	if (!ff_dev) {
+		pr_err("Failed to allocate FF device\n");
+		return -ENOMEM;
+	}
+
+	ff_dev->name = "MTK Vibrator FF Device";
+	ff_dev->id.bustype = BUS_VIRTUAL;
+	ff_dev->close = vib_shutdown;
+	input_set_capability(ff_dev, EV_FF, FF_RUMBLE);
+
+
+	ret = input_ff_create_memless(ff_dev, NULL, vibrator_play_effect);
+	if (ret) {
+		pr_err("Failed to create FF device\n");
+		input_free_device(ff_dev);
+		return ret;
+	}
+
+	ret = input_register_device(ff_dev);
+	if (ret) {
+		pr_err("Failed to register FF device\n");
+		input_free_device(ff_dev);
+		return ret;
+	}
+
+	return 0;
+}
+// FF end
+
 static int vib_probe(struct platform_device *pdev)
 {
 	init_vibr_oc_handler(vibrator_oc_handler);
@@ -208,22 +286,7 @@ static int vib_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static void vib_shutdown(struct platform_device *pdev)
-{
-	unsigned long flags;
 
-	VIB_DEBUG("vib_shutdown: enter!\n");
-	spin_lock_irqsave(&vibe_lock, flags);
-	shutdown_flag = 1;
-	if (vibe_state) {
-		VIB_DEBUG("vib_shutdown: vibrator will disable\n");
-		vibe_state = 0;
-		spin_unlock_irqrestore(&vibe_lock, flags);
-		vibr_Disable();
-	} else {
-		spin_unlock_irqrestore(&vibe_lock, flags);
-	}
-}
 
 /******************************************************************************
 * Device driver structure
@@ -319,6 +382,13 @@ static int vib_mod_init(void)
 	if (ret)
 		VIB_DEBUG("device_create_file vibr_on fail!\n");
 
+	ret = 	init_ff_device();
+
+	if (ret) {
+		VIB_DEBUG("Unable to register FF driver (%d)\n", ret);
+		return ret;
+	}
+
 	VIB_DEBUG("vib_mod_init Done\n");
 
 	return RSUCCESS;
@@ -345,6 +415,7 @@ static void vib_mod_exit(void)
 {
 	VIB_DEBUG("MediaTek MTK vibrator driver unregister, version %s\n",
 		  VERSION);
+  	input_unregister_device(ff_dev); 
 	if (vibrator_queue)
 		destroy_workqueue(vibrator_queue);
 	VIB_DEBUG("vib_mod_exit Done\n");
