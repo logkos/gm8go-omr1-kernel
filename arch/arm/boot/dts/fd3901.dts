@@ -11,8 +11,8 @@
 
 /* chosen */
 &chosen {
-	bootargs = "console=tty0 console=ttyMT0,921600n1 root=/dev/ram initrd=0x44000000,\
-0x1000000 loglevel=8 androidboot.selinux=permissive androidboot.hardware=mt6739 initcall_debug=1";
+	bootargs = "console=tty0 console=ttyMT0,921600n1 initrd=0x44000000,\
+0x1000000 loglevel=8 androidboot.hardware=mt6739 initcall_debug=1 clk_ignore_unused pd_ignore_unused";
 	/* fpga may has no lk, we need to specify display info here */
 	/* fb buffer is reserved using this dts by memory node above */
 
@@ -415,16 +415,17 @@
 	tpd-filter-custom-speed = <0 0 0>;
 	pinctrl-names = "default", "state_eint_as_int", "state_eint_output0", "state_eint_output1",
 		"state_rst_output0", "state_rst_output1";
-	pinctrl-0 = <&ctp_pins_default>;
-	pinctrl-1 = <&ctp_pins_eint_as_int>;
-	pinctrl-2 = <&ctp_pins_eint_output0>;
-	pinctrl-3 = <&ctp_pins_eint_output1>;
-	pinctrl-4 = <&ctp_pins_rst_output0>;
-	pinctrl-5 = <&ctp_pins_rst_output1>;
+	pinctrl-0 = <0x18>;
+	pinctrl-1 = <0x19>;
+	pinctrl-2 = <0x1a>;
+	pinctrl-3 = <0x1b>;
+	pinctrl-4 = <0x1c>;
+	pinctrl-5 = <0x1d>;
 	status = "okay";
 };
 &pio {
 	ctp_pins_default: eint0default {
+		
 	};
 	ctp_pins_eint_as_int: eint@0 {
 		pins_cmd_dat {
@@ -764,14 +765,14 @@ lcm_enn_bias1: enn@1 {
                                  };
 	fingerprint_rst_default:fingerprint_rst_def{
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO3__FUNC_GPIO3>;
+			pins = <0x300>;
 			slew-rate = <1>;
 			output-high;
 		};
 	};
 	fingerprint_rst_disable:fingerprint_rst_dis{
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO3__FUNC_GPIO3>;
+			pins = <0x300>;
 			slew-rate = <1>;
 			output-low;
 		};

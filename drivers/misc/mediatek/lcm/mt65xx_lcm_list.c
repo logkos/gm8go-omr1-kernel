@@ -34,13 +34,14 @@ LCM_DSI_MODE_CON lcm_dsi_mode;
 #endif
 
 LCM_DRIVER *lcm_driver_list[] = {
-
-	&nt35521_hd_dsi_vdo_truly_nt50358_lcm_drv,
+	&r61350_cpt55_xinli_lhd_lcm_drv,
+	//&nt35521_hd_dsi_vdo_truly_nt50358_lcm_drv,
 
 };
 
 unsigned char lcm_name_list[][128] = {
-	"nt35521_hd_dsi_vdo_truly_nt50358_drv",
+	"r61350_cpt55_xinli_lhd,"
+	//"nt35521_hd_dsi_vdo_truly_nt50358_drv",
 #if defined(HX8392A_DSI_CMD)
 	"hx8392a_dsi_cmd",
 #endif

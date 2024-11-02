@@ -3819,8 +3819,6 @@ int primary_display_wait_for_vsync(void *config)
 	}
 
 out:
-	if (c == NULL)
-		return ret;
 	c->vsync_ts = ts;
 	c->vsync_cnt++;
 	c->lcm_fps = pgc->lcm_refresh_rate;

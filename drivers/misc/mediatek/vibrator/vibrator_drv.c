@@ -219,20 +219,7 @@ static int vibrator_play_effect(struct input_dev *dev, void *data, struct ff_eff
 	if (effect->type == FF_RUMBLE) {
 		int duration = effect->replay.length;
 
-		// Cap duration to prevent accidental long vibrations
-		duration = min(duration, 15000);
-
-		// Lock for accessing shared resources safely
-		unsigned long flags;
-		spin_lock_irqsave(&vibe_lock, flags);
-
-		// Start the timer to manage vibration duration
-		vibe_state = 1;
-		hrtimer_start(&vibe_timer, ktime_set(duration / 1000, (duration % 1000) * 1000000), HRTIMER_MODE_REL);
-		spin_unlock_irqrestore(&vibe_lock, flags);
-
-		// Queue work to update vibration state
-		queue_work(vibrator_queue, &vibrator_work);
+		vibrator_enable(NULL, duration);
 	}
 
 	return 0;

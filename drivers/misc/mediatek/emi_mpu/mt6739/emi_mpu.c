@@ -134,6 +134,7 @@ static const char *__id2name(u32 id)
 
 static void __clear_emi_mpu_vio(void)
 {
+	return;
 	u32 dbg_s, dbg_t, i;
 
 	/* clear violation status */
@@ -155,6 +156,7 @@ static void __clear_emi_mpu_vio(void)
 
 static int mpu_check_violation(void)
 {
+	return 0;
 	u32 dbg_s, dbg_t, dbg_t_2nd;
 	u32 master_ID, domain_ID, wr_vio, wr_oo_vio;
 	s32 region;
@@ -293,6 +295,7 @@ void acquire_dram_setting(struct basic_dram_setting *pasrdpd)
 int emi_mpu_set_region_protection(unsigned long long start,
 unsigned long long end, int region, unsigned int access_permission)
 {
+	return 0;
 	int ret = 0;
 	unsigned int start_align;
 	unsigned int end_align;
@@ -506,6 +509,7 @@ static struct platform_driver emi_mpu_ctrl = {
 
 static int __init emi_mpu_mod_init(void)
 {
+	return 0;
 	int ret;
 	unsigned int mpu_irq = 0;
 
