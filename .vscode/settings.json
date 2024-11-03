@@ -1,0 +1,7 @@
+{
+  "C_Cpp_Runner.msvcBatchPath": "",
+  "search.exclude": {
+    "**/mt6763/**": true,
+    "**/mt6771/**": true,
+  }
+}

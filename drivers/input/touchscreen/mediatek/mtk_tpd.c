@@ -556,8 +556,8 @@ pr_err("Lomen 1\n");
 #ifndef CONFIG_FPGA_EARLY_PORTING
 /*Fix build errors,as some projects  cannot support these apis while bring up*/
 #if defined(CONFIG_MTK_FB) && defined(CONFIG_MTK_LCM)
-		TPD_RES_X = DISP_GetScreenWidth();
-		TPD_RES_Y = DISP_GetScreenHeight();
+		TPD_RES_X = 720;
+		TPD_RES_Y = 1440;
 #else/*for some projects, we do not use mtk framebuffer*/
 	TPD_RES_X = tpd_dts_data.tpd_resolution[0];
 	TPD_RES_Y = tpd_dts_data.tpd_resolution[1];

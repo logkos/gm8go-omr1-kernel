@@ -699,52 +699,40 @@ static irqreturn_t tpd_eint_interrupt_handler(unsigned irq, struct irq_desc *des
 	return IRQ_HANDLED;
 }
 static int tpd_history_x, tpd_history_y;
+
 void gt1x_touch_down(s32 x, s32 y, s32 size, s32 id)
 {
-	input_mt_slot(tpd->dev, id);
-	input_report_key(tpd->dev, BTN_TOUCH, 1);
-	input_report_abs(tpd->dev, ABS_MT_PRESSURE, size);
-	input_report_abs(tpd->dev, ABS_MT_TOUCH_MAJOR, 1);
-	input_report_abs(tpd->dev, ABS_MT_POSITION_X, x);
-	input_report_abs(tpd->dev, ABS_MT_POSITION_Y, y);
-	input_report_abs(tpd->dev,  ABS_MT_TRACKING_ID, id);
-	input_mt_sync(tpd->dev);
-	TPD_EM_PRINT(x, y, x, y, id-1, 1);
+    input_mt_slot(tpd->dev, id);
+    input_mt_report_slot_state(tpd->dev, MT_TOOL_FINGER, true);
+    input_report_key(tpd->dev, BTN_TOUCH, 1);                     // Report touch down state
+    input_report_abs(tpd->dev, ABS_MT_PRESSURE, size);            // Report pressure (force)
+    input_report_abs(tpd->dev, ABS_MT_TOUCH_MAJOR, size);         // Major touch area (size)
+    input_report_abs(tpd->dev, ABS_MT_POSITION_X, x);             // Report X position
+    input_report_abs(tpd->dev, ABS_MT_POSITION_Y, y);             // Report Y position
+    input_report_abs(tpd->dev, ABS_MT_TRACKING_ID, id);           // Unique tracking ID for this touch
+    input_mt_sync(tpd->dev);                                      // Sync multitouch events
 
-	TPD_DEBUG_SET_TIME;
-	if(y > TPD_RES_Y) //virtual key debounce to avoid android ANR issue
-	 {
-         msleep(50);
-		 //printk("D virtual key \n");
-	 }
-
-
-	tpd_history_x = x;
-	tpd_history_y = y;
-#ifdef CONFIG_MTK_BOOT
-	if (tpd_dts_data.use_tpd_button) {
-		if (FACTORY_BOOT == get_boot_mode() || RECOVERY_BOOT == get_boot_mode())
-			tpd_button(x, y, 1);
-	}
-#endif
+    input_sync(tpd->dev);                                         // Sync to finish reporting
+    TPD_EM_PRINT(x, y, x, y, id-1, 1);                            // Optional debug output
+    TPD_DEBUG_SET_TIME;                                           // Optional timestamp debug
+    tpd_history_x = x;
+    tpd_history_y = y;
 }
 
 void gt1x_touch_up(s32 id)
 {
-	input_mt_slot(tpd->dev, id);
-	input_report_key(tpd->dev, BTN_TOUCH, 0);
-	input_mt_sync(tpd->dev);
-	TPD_DEBUG_SET_TIME;
-	TPD_EM_PRINT(tpd_history_x, tpd_history_y, tpd_history_x, tpd_history_y, 0, 0);
-	tpd_history_x = 0;
-	tpd_history_y = 0;
-#ifdef CONFIG_MTK_BOOT
-	if (tpd_dts_data.use_tpd_button) {
-		if (FACTORY_BOOT == get_boot_mode() || RECOVERY_BOOT == get_boot_mode())
-			tpd_button(0, 0, 0);
-	}
-#endif
+    input_mt_slot(tpd->dev, id);
+    input_mt_report_slot_state(tpd->dev, MT_TOOL_FINGER, false);  // End slot for this finger
+    input_report_key(tpd->dev, BTN_TOUCH, 0);                     // Report touch release
+    input_mt_sync(tpd->dev);                                      // Sync multitouch events
+    
+    input_sync(tpd->dev);                                         // Sync to complete report
+    TPD_DEBUG_SET_TIME;                                           // Optional timestamp debug
+    TPD_EM_PRINT(tpd_history_x, tpd_history_y, tpd_history_x, tpd_history_y, 0, 0);
+    tpd_history_x = 0;
+    tpd_history_y = 0;
 }
+
 
 #ifdef CONFIG_GTP_CHARGER_SWITCH
 u32 gt1x_get_charger_status(void)

@@ -6,20 +6,13 @@
 	interrupt-parent = <0x01>;
 	#address-cells = <0x02>;
 	#size-cells = <0x02>;
-/*
-	aliases {
-	display0 = &framebuffer0;
-	};
-*/
-
+	
 	chosen {
 		bootargs = "console=tty0 console=ttyMT0,921600n1 initrd=0x44000000,\
-	0x1000000 loglevel=8 clk_ignore_unused pd_ignore_unused earlyprintk";
+	0x1000000";
 		linux,phandle = <0x38>;
 		phandle = <0x38>;
 	};
-
-
 
 	pmu {
 		compatible = "arm,cortex-a7-pmu";
@@ -1828,6 +1821,25 @@
 		compatible = "mediatek,mt6739-touch";
 		linux,phandle = <0x4e>;
 		phandle = <0x4e>;
+		tpd-resolution = <720 1440>;
+		use-tpd-button = <0>;
+		tpd-key-num = <3>;
+		tpd-key-local= <139 172 158 0>;
+		tpd-key-dim-local = <90 883 100 40 230 883 100 40 370 883 100 40 0 0 0 0>;
+		tpd-max-touch-num = <10>;
+		tpd-filter-enable = <1>;
+		tpd-filter-pixel-density = <106>;
+		tpd-filter-custom-prameters = <0 0 0 0 0 0 0 0 0 0 0 0>;
+		tpd-filter-custom-speed = <0 0 0>;
+		pinctrl-names = "default", "state_eint_as_int", "state_eint_output0", "state_eint_output1",
+		"state_rst_output0", "state_rst_output1";
+		pinctrl-0 = <0x18>;
+		pinctrl-1 = <0x19>;
+		pinctrl-2 = <0x1a>;
+		pinctrl-3 = <0x1b>;
+		pinctrl-4 = <0x1c>;
+		pinctrl-5 = <0x1d>;
+		status = "okay";
 	};
 
 	flashlight_core {
