@@ -204,6 +204,7 @@ pr_err("Lomen 0.2\n");
 		dev_err(&pdev->dev, "fwq Cannot find touch pinctrl state_eint_output1!\n");
 		return ret;
 	}
+	pr_err("Lomen 0.6\n");
 	if (tpd_dts_data.tpd_use_ext_gpio == false) {
 		rst_output0 = pinctrl_lookup_state(pinctrl1, "state_rst_output0");
 		if (IS_ERR(rst_output0)) {
@@ -218,7 +219,7 @@ pr_err("Lomen 0.2\n");
 			return ret;
 		}
 	}
-	TPD_DEBUG("[tpd%d] mt_tpd_pinctrl----------\n", pdev->id);
+	TPD_DEBUG("[tpd%d] DONE mt_tpd_pinctrl----------\n", pdev->id);
 	return 0;
 }
 
@@ -402,12 +403,14 @@ static int tpd_fb_notifier_callback(struct notifier_block *self, unsigned long e
 	int blank;
 	int err = 0;
 
-	TPD_DEBUG("tpd_fb_notifier_callback\n");
+	//TPD_DEBUG("tpd_fb_notifier_callback\n");
 
 	evdata = data;
 	/* If we aren't interested in this event, skip it immediately ... */
-	if (event != FB_EVENT_BLANK)
+	 if (event != FB_EVENT_BLANK) {
+		TPD_DMESG("FB_EVENT_BLANK AINT HAPPENED");
 		return 0;
+	};
 
 	blank = *(int *)evdata->data;
 	TPD_DMESG("fb_notify(blank=%d)\n", blank);
@@ -424,6 +427,7 @@ static int tpd_fb_notifier_callback(struct notifier_block *self, unsigned long e
 		break;
 	case FB_BLANK_POWERDOWN:
 		TPD_DMESG("LCD OFF Notify\n");
+		return 0;
 		if (g_tpd_drv && !tpd_suspend_flag) {
 			err = cancel_work_sync(&touch_resume_work);
 			if (!err)
@@ -515,7 +519,7 @@ static int tpd_probe(struct platform_device *pdev)
 	int i = 0;
 #ifndef CONFIG_CUSTOM_LCM_X
 #ifdef CONFIG_LCM_WIDTH
-	unsigned long tpd_res_x = 0, tpd_res_y = 0;
+	unsigned long tpd_res_x = 720, tpd_res_y = 1440;
 	int ret = 0;
 #endif
 #endif
@@ -581,10 +585,8 @@ pr_err("Lomen 1\n");
 #endif
 	}
 
-	if (2560 == TPD_RES_X)
-		TPD_RES_X = 2048;
-	if (1600 == TPD_RES_Y)
-		TPD_RES_Y = 1536;
+		TPD_RES_X = 720;
+		TPD_RES_Y = 1440;
 	pr_debug("mtk_tpd: TPD_RES_X = %lu, TPD_RES_Y = %lu\n", TPD_RES_X, TPD_RES_Y);
 
 	tpd_mode = TPD_MODE_NORMAL;
@@ -615,7 +617,7 @@ pr_err("Lomen 1\n");
 			tpd_driver_list[i].tpd_local_init();
 			/* msleep(1); */
 			if (tpd_load_status == 1) {
-				TPD_DMESG("[mtk-tpd]tpd_probe, tpd_driver_name=%s\n",
+				TPD_DMESG("[mtk-tpd]tpd_probe, gt1151 btw tpd_driver_name=%s\n",
 					  tpd_driver_list[i].tpd_device_name);
 				g_tpd_drv = &tpd_driver_list[i];
 				break;
@@ -662,8 +664,14 @@ pr_err("Lomen 1\n");
 		input_set_abs_params(tpd->dev, ABS_MT_TOUCH_MAJOR, 0, 100, 0, 0);
 		input_set_abs_params(tpd->dev, ABS_MT_TOUCH_MINOR, 0, 100, 0, 0);
 #endif /* CONFIG_MTK_S3320 */
+
+		input_set_abs_params(tpd->dev, ABS_MT_POSITION_X, 0, TPD_RES_X, 0, 0);
+		input_set_abs_params(tpd->dev, ABS_MT_POSITION_Y, 0, TPD_RES_Y, 0, 0);
+		input_set_abs_params(tpd->dev, ABS_MT_TOUCH_MAJOR, 0, 100, 0, 0);
+		input_set_abs_params(tpd->dev, ABS_MT_TOUCH_MINOR, 0, 100, 0, 0); 	
 		TPD_DMESG("Cap touch panel driver\n");
-	}
+	};
+
 	input_set_abs_params(tpd->dev, ABS_X, 0, TPD_RES_X, 0, 0);
 	input_set_abs_params(tpd->dev, ABS_Y, 0, TPD_RES_Y, 0, 0);
 	input_abs_set_res(tpd->dev, ABS_X, TPD_RES_X);

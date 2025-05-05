@@ -22,7 +22,7 @@
 	atag,videolfb-islcm_inited = <0>;
 	atag,videolfb-fps= <6000>;
 	atag,videolfb-vramSize= <0x017bb000>;
-	atag,videolfb-lcmname= "nt35521_hd_dsi_vdo_truly_nt50358_drv";
+	atag,videolfb-lcmname= "r61350_cpt55_xinli_lhd";
 };
 
 &odm {
@@ -97,6 +97,7 @@
 	};
 
 	gyro@69 {
+		compatible = "mediatek,gyroscope";
 		pinctrl-names = "pin_default", "pin_cfg";
 		pinctrl-0 = <&gyro_intpin_default>;
 		pinctrl-1 = <&gyro_intpin_cfg>;
@@ -130,6 +131,8 @@
 	};
 
 	barometer@77 {
+		compatible = "mediatek,barometer";
+		status = "okay";
 		i2c_num = <1>;
 		i2c_addr = <0x77 0 0 0>;
 		direction = <0>;
@@ -415,12 +418,13 @@
 	tpd-filter-custom-speed = <0 0 0>;
 	pinctrl-names = "default", "state_eint_as_int", "state_eint_output0", "state_eint_output1",
 		"state_rst_output0", "state_rst_output1";
-	pinctrl-0 = <0x18>;
-	pinctrl-1 = <0x19>;
-	pinctrl-2 = <0x1a>;
-	pinctrl-3 = <0x1b>;
-	pinctrl-4 = <0x1c>;
-	pinctrl-5 = <0x1d>;
+	pinctrl-0 = <&ctp_pins_default>;
+	pinctrl-1 = <&ctp_pins_eint_as_int>;
+	pinctrl-2 = <&ctp_pins_eint_output0>;
+	pinctrl-3 = <&ctp_pins_eint_output1>;
+	pinctrl-4 = <&ctp_pins_rst_output0>;
+	pinctrl-5 = <&ctp_pins_rst_output1>;
+	compatible = "mediatek,mt6739-touch";
 	status = "okay";
 };
 &pio {

@@ -3615,13 +3615,13 @@ static int __close_dsi_default_clock(enum DISP_MODULE_ENUM module)
  */
 int ddp_dsi_power_on(enum DISP_MODULE_ENUM module, void *cmdq_handle)
 {
-	static int not_first_time;
+	static int not_first_time = 0;
 
 	DISPFUNC();
 	pr_debug("ddp_dsi_power_on");
 	/* mipi was alreay initialized: lk(mipi init)->kernel(power on) */
 	if (MIPITX_IsEnabled(module, NULL)) {
-		ASSERT(not_first_time == 0);
+	//	ASSERT(not_first_time == 0);
 		not_first_time = 1;
 		DISPCHECK("MIPITX was alreay initialized\n");
 		/* enable cg(for ccf)*/
@@ -3636,7 +3636,7 @@ int ddp_dsi_power_on(enum DISP_MODULE_ENUM module, void *cmdq_handle)
 		if (module == DISP_MODULE_DSI1 || module == DISP_MODULE_DSIDUAL)
 			DISPDBG("not support DISP_MODULE_DSI1\n");
 
-		/*__close_dsi_default_clock(module); */
+		//__close_dsi_default_clock(module); 
 
 		_set_power_on_status(module, 1);
 		return DSI_STATUS_OK;

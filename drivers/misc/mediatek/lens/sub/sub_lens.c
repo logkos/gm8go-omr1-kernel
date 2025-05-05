@@ -36,6 +36,7 @@
 /* ------------------------- */
 
 #include "lens_info.h"
+#include "inc/lens_list.h"
 
 #define AF_DRVNAME "SUBAF"
 

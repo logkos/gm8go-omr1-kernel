@@ -6,20 +6,14 @@
 	interrupt-parent = <0x01>;
 	#address-cells = <0x02>;
 	#size-cells = <0x02>;
-/*
-	aliases {
-	display0 = &framebuffer0;
-	};
-*/
-
+	
 	chosen {
 		bootargs = "console=tty0 console=ttyMT0,921600n1 initrd=0x44000000,\
-	0x1000000 loglevel=8 clk_ignore_unused pd_ignore_unused earlyprintk";
+		0x1000000 loglevel=8 clk_ignore_unused pd_ignore_unused earlyprintk";
+
 		linux,phandle = <0x38>;
 		phandle = <0x38>;
 	};
-
-
 
 	pmu {
 		compatible = "arm,cortex-a7-pmu";
@@ -1312,7 +1306,7 @@
 	spi@11010000 {
 		compatible = "mediatek,mt6739-spi";
 		mediatek,pad-select = <0x00>;
-		reg = <0x00 0x11010000 0x00 0x1000>;
+		reg = <0x11010000 0x1000>;
 		interrupts = <0x00 0x7a 0x08>;
 		clocks = <0x24 0x0a 0x24 0x30 0x19 0x36>;
 		clock-names = "parent-clk", "sel-clk", "spi-clk";

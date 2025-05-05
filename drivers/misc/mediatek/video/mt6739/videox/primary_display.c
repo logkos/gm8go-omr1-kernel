@@ -4003,7 +4003,7 @@ int primary_display_suspend(void)
 	mmprofile_log_ex(ddp_mmp_get_events()->primary_suspend, MMPROFILE_FLAG_PULSE, 0, 8);
 
 	pgc->lcm_refresh_rate = 60;
-	/* pgc->state = DISP_SLEPT; */
+	primary_set_state(DISP_SLEPT);
 done:
 	primary_set_state(DISP_SLEPT);
 	dvfsrc_mdsrclkena_control_nolock(0);

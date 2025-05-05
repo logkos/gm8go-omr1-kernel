@@ -694,33 +694,66 @@ static int mtkfb_check_var(struct fb_var_screeninfo *var, struct fb_info *fbi)
 		var->xres, var->yres, var->xres_virtual, var->yres_virtual);
 	DISPDBG("xoffset=%u, yoffset=%u, bits_per_pixel=%u\n", var->xoffset, var->yoffset, var->bits_per_pixel);
 
-	if (bpp == 16) {
-		var->red.offset = 11;
-		var->red.length = 5;
-		var->green.offset = 5;
-		var->green.length = 6;
-		var->blue.offset = 0;
-		var->blue.length = 5;
-		var->transp.offset = 0;
-		var->transp.length = 0;
-	} else if (bpp == 24) {
-		var->red.length = var->green.length = var->blue.length = 8;
-		var->transp.length = 0;
+if (bpp == 8) {
+    // Example for 8-bit grayscale (if applicable)
+    var->red.offset = 0;
+    var->red.length = 8;
+    var->green.offset = 0;
+    var->green.length = 8;
+    var->blue.offset = 0;
+    var->blue.length = 8;
+    var->transp.offset = 0;
+    var->transp.length = 0;
+} else if (bpp == 12) {
+    // Example for 12-bit RGB444
+    var->red.offset = 8;
+    var->red.length = 4;
+    var->green.offset = 4;
+    var->green.length = 4;
+    var->blue.offset = 0;
+    var->blue.length = 4;
+    var->transp.offset = 0;
+    var->transp.length = 0;
+} else if (bpp == 16) {
+    var->red.offset = 11;
+    var->red.length = 5;
+    var->green.offset = 5;
+    var->green.length = 6;
+    var->blue.offset = 0;
+    var->blue.length = 5;
+    var->transp.offset = 0;
+    var->transp.length = 0;
+} else if (bpp == 24) {
+    var->red.offset = 16;    // Red starts at the highest 8 bits
+    var->red.length = 8;
+    var->green.offset = 8;   // Green occupies the middle 8 bits
+    var->green.length = 8;
+    var->blue.offset = 0;    // Blue occupies the lowest 8 bits
+    var->blue.length = 8;
+    var->transp.offset = 0;  // No transparency channel
+    var->transp.length = 0;
 
-		/* Check if format is RGB565 or BGR565 */
+    // Check if format is RGB888 or BGR888
+    ASSERT(var->green.offset == 8);
+    ASSERT(var->red.offset + var->blue.offset == 16);
+    ASSERT(var->red.offset == 16 || var->red.offset == 0);
+} else if (bpp == 32) {
+    var->red.offset = 16;     // Red starts at the highest 8 bits (after alpha)
+    var->red.length = 8;
+    var->green.offset = 8;    // Green occupies the middle 8 bits
+    var->green.length = 8;
+    var->blue.offset = 0;     // Blue occupies the lowest 8 bits
+    var->blue.length = 8;
+    var->transp.offset = 24;  // Alpha (transparency) occupies the highest 8 bits
+    var->transp.length = 8;
 
-		ASSERT(var->green.offset == 8);
-		ASSERT(var->red.offset + var->blue.offset == 16);
-		ASSERT(var->red.offset == 16 || var->red.offset == 0);
-	} else if (bpp == 32) {
-		var->red.length = var->green.length = var->blue.length = var->transp.length = 8;
+    // Check if format is ARGB8888 or ABGR8888
+    ASSERT(var->green.offset == 8 && var->transp.offset == 24);
+    ASSERT(var->red.offset + var->blue.offset == 16);
+    ASSERT(var->red.offset == 16 || var->red.offset == 0);
+}
 
-		/* Check if format is ARGB565 or ABGR565 */
 
-		ASSERT(var->green.offset == 8 && var->transp.offset == 24);
-		ASSERT(var->red.offset + var->blue.offset == 16);
-		ASSERT(var->red.offset == 16 || var->red.offset == 0);
-	}
 
 	var->red.msb_right = 0;
 	var->green.msb_right = 0;

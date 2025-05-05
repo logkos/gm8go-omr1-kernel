@@ -232,12 +232,13 @@ static int disp_gamma_set_lut(const struct DISP_GAMMA_LUT_T __user *user_gamma_l
 		ret = -EFAULT;
 		kfree(gamma_lut);
 	} else {
-		id = gamma_lut->hw_id;
 		if (id >= 0 && id < DISP_GAMMA_TOTAL) {
 			mutex_lock(&g_gamma_global_lock);
-
-			old_lut = g_disp_gamma_lut[id];
+			id = gamma_lut->hw_id;
+			
 			g_disp_gamma_lut[id] = gamma_lut;
+			old_lut = g_disp_gamma_lut[id];
+			
 
 			GAMMA_DBG("Set module(%d) lut", module);
 			ret = disp_gamma_write_lut_reg(cmdq, module, id, 0);

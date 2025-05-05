@@ -349,7 +349,7 @@ s32 gt1x_i2c_test(void)
 {
 	u8 retry = 0;
 	s32 ret = -1;
-	u32 hw_info = 0;
+	u32 hw_info;
 
 	GTP_DEBUG_FUNC();
 
@@ -1628,7 +1628,7 @@ s32 gt1x_init(void)
 		/* read version information */
 		ret = gt1x_read_version(&gt1x_version);
 		if (ret != 0) {
-			GTP_ERROR("GTP get verision failed!");
+			GTP_ERROR("GTP get version failed!");
 			gt1x_init_failed = 1;
 			continue;
 		}
@@ -1647,10 +1647,10 @@ s32 gt1x_init(void)
 	ret |= gt1x_init_failed;
 	if (ret) {
 		GTP_INFO("Init failed, use default setting");
-		gt1x_abs_x_max = CFG_TPD_WIDTH; //tpd_dts_data.tpd_resolution[0];
-		gt1x_abs_y_max = CFG_TPD_HEIGHT; //tpd_dts_data.tpd_resolution[1];
-		gt1x_int_type = 1 ;//GTP_INT_TRIGGER;
-		gt1x_wakeup_level = 1;//GTP_WAKEUP_LEVEL;
+		gt1x_abs_x_max = tpd_dts_data.tpd_resolution[0];
+		gt1x_abs_y_max = tpd_dts_data.tpd_resolution[1];
+		gt1x_int_type = GTP_INT_TRIGGER;
+		gt1x_wakeup_level = GTP_WAKEUP_LEVEL;
 	}
 
 	gt1x_workqueue = create_singlethread_workqueue("gt1x_workthread");

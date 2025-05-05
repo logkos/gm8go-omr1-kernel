@@ -670,6 +670,7 @@ void _primary_display_enable_mmsys_clk(void)
 /* Share wrot sram end */
 void _vdo_mode_enter_idle(void)
 {
+	return 0;
 	int fps = 0;
 
 	DISPMSG("[disp_lowpower]%s\n", __func__);

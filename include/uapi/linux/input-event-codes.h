@@ -301,6 +301,11 @@
 #define KEY_BRIGHTNESSUP	225
 #define KEY_MEDIA		226
 
+#define KEY_NAVI_RIGHT  249
+#define KEY_NAVI_LEFT   254
+#define KEY_NAVI_LONG   183
+
+
 #define KEY_SWITCHVIDEOMODE	227	/* Cycle between available video
 					   outputs (Monitor/LCD/TV-out/etc) */
 #define KEY_KBDILLUMTOGGLE	228

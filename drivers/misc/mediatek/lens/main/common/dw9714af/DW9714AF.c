@@ -246,3 +246,105 @@ int DW9714AF_SetI2Cclient(struct i2c_client *pstAF_I2Cclient, spinlock_t *pAF_Sp
 
 	return 1;
 }
+
+
+int DW9714AF_SetI2Cclient_Sub(struct i2c_client *pstAF_I2Cclient,
+			  spinlock_t *pAF_SpinLock, int *pAF_Opened)
+{
+	g_pstAF_I2Cclient = pstAF_I2Cclient;
+	g_pAF_SpinLock = pAF_SpinLock;
+	g_pAF_Opened = pAF_Opened;
+
+	//initAF();
+
+	return 1;
+}
+
+long DW9714AF_Ioctl_Sub(struct file *a_pstFile, unsigned int a_u4Command,
+		    unsigned long a_u4Param)
+{
+	long i4RetValue = 0;
+
+	switch (a_u4Command) {
+	case AFIOC_G_MOTORINFO:
+		i4RetValue =
+			getAFInfo((__user struct stAF_MotorInfo *)(a_u4Param));
+		break;
+
+	case AFIOC_T_MOVETO:
+		i4RetValue = moveAF(a_u4Param);
+		break;
+
+	case AFIOC_T_SETINFPOS:
+		i4RetValue = setAFInf(a_u4Param);
+		break;
+
+	case AFIOC_T_SETMACROPOS:
+		i4RetValue = setAFMacro(a_u4Param);
+		break;
+
+	default:
+		LOG_INF("No CMD\n");
+		i4RetValue = -EPERM;
+		break;
+	}
+
+	return i4RetValue;
+}
+
+int DW9714AF_Release_Sub(struct inode *a_pstInode, struct file *a_pstFile)
+{
+	char puSendCmdmode[2] = {0x06, 0x83};
+	char puSendCmd1[2] = {0x02, 0x01};
+	int i4RetValue = 0;
+	LOG_INF("Start\n");
+
+	if (*g_pAF_Opened == 2) {
+		LOG_INF("Wait\n");
+		g_pstAF_I2Cclient->addr = AF_I2C_SLAVE_ADDR;
+
+		g_pstAF_I2Cclient->addr = g_pstAF_I2Cclient->addr >> 1;
+
+		i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puSendCmdmode, 2);
+		if (i4RetValue < 0) {
+			LOG_INF("I2C send failed!!\n");
+			return -1;
+		}
+		while (g_u4CurrPosition > 0) {
+			if (g_u4CurrPosition >= 400) {
+				g_u4CurrPosition -= 200;
+			} else if (g_u4CurrPosition >= 300) {
+				g_u4CurrPosition -= 100;
+			} else if (g_u4CurrPosition >= 250) {
+				g_u4CurrPosition -= 50;
+			} else if (g_u4CurrPosition >= 210) {
+				g_u4CurrPosition -= 30;
+			} else if (g_u4CurrPosition >= 150) {
+				g_u4CurrPosition -= 20;
+			} else {
+				g_u4CurrPosition = 0;
+			}
+
+			s4AF_WriteReg(g_u4CurrPosition);
+			mdelay(10);
+
+		}
+		i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puSendCmd1, 2); /* Power down mode */
+		if (i4RetValue < 0) {
+			LOG_INF("I2C send failed!!\n");
+			return -1;
+		}
+	}
+
+	if (*g_pAF_Opened) {
+		LOG_INF("Free\n");
+
+		spin_lock(g_pAF_SpinLock);
+		*g_pAF_Opened = 0;
+		spin_unlock(g_pAF_SpinLock);
+	}
+
+	LOG_INF("End\n");
+
+	return 0;
+}

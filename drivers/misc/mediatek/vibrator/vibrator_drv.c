@@ -98,7 +98,7 @@ static spinlock_t vibe_lock;
 static int vibe_state;
 static int ldo_state;
 static int shutdown_flag;
-static struct input_dev *ff_dev;
+struct input_dev *ff_inuse;
 static int vibr_Enable(void)
 {
 	if (!ldo_state) {
@@ -216,52 +216,37 @@ static const struct of_device_id vibr_of_ids[] = {
 //FF code
 static int vibrator_play_effect(struct input_dev *dev, void *data, struct ff_effect *effect)
 {
-	if (effect->type == FF_RUMBLE) {
-		int duration = effect->replay.length;
-
-		vibrator_enable(NULL, duration);
+	if (effect->type != FF_RUMBLE)
+		return 0;
+	
+	switch(effect->type) {
+		case FF_RUMBLE: {
+			vibrator_enable(NULL, effect->replay.length);
+			break;
+		}
+		default:
+		break;
 	}
-
 	return 0;
 }
-
-
-static int init_ff_device(void)
-{
-	int ret;
-
-	ff_dev = input_allocate_device();
-	if (!ff_dev) {
-		pr_err("Failed to allocate FF device\n");
-		return -ENOMEM;
-	}
-
-	ff_dev->name = "MTK Vibrator FF Device";
-	ff_dev->id.bustype = BUS_VIRTUAL;
-	ff_dev->close = vib_shutdown;
-	input_set_capability(ff_dev, EV_FF, FF_RUMBLE);
-
-
-	ret = input_ff_create_memless(ff_dev, NULL, vibrator_play_effect);
-	if (ret) {
-		pr_err("Failed to create FF device\n");
-		input_free_device(ff_dev);
-		return ret;
-	}
-
-	ret = input_register_device(ff_dev);
-	if (ret) {
-		pr_err("Failed to register FF device\n");
-		input_free_device(ff_dev);
-		return ret;
-	}
-
-	return 0;
-}
-// FF end
 
 static int vib_probe(struct platform_device *pdev)
 {
+	static struct input_dev *ff_dev;
+	ff_dev = input_allocate_device();
+	ff_inuse = ff_dev;
+
+	ff_dev->name = "mtk-vbr";
+	ff_dev->id.version = 1;
+	ff_dev->id.bustype = BUS_VIRTUAL;
+	ff_dev->dev.parent = &pdev->dev;
+	ff_dev->close = vib_shutdown;
+	input_set_capability(ff_dev, EV_FF, FF_RUMBLE);
+
+	s32 ret = input_ff_create_memless(ff_dev, NULL, vibrator_play_effect);
+	if (ret != 0) 
+		VIB_DEBUG("unable to create FF device, error: %d\n", ret);
+	
 	init_vibr_oc_handler(vibrator_oc_handler);
 	init_cust_vibrator_dtsi(pdev);
 	vibr_power_set();
@@ -270,6 +255,7 @@ static int vib_probe(struct platform_device *pdev)
 
 static int vib_remove(struct platform_device *pdev)
 {
+	input_unregister_device(ff_inuse);
 	return 0;
 }
 
@@ -303,9 +289,9 @@ static ssize_t store_vibr_on(struct device *dev, struct device_attribute *attr,
 		/* VIB_DEBUG("buf is %s and size is %d\n", buf, size); */
 		if (buf[0] == '0')
 			vibr_Disable();
-		else
-			vibr_Enable();
-	}
+		
+		vibr_Enable();
+	};
 	return size;
 }
 
@@ -369,13 +355,6 @@ static int vib_mod_init(void)
 	if (ret)
 		VIB_DEBUG("device_create_file vibr_on fail!\n");
 
-	ret = 	init_ff_device();
-
-	if (ret) {
-		VIB_DEBUG("Unable to register FF driver (%d)\n", ret);
-		return ret;
-	}
-
 	VIB_DEBUG("vib_mod_init Done\n");
 
 	return RSUCCESS;
@@ -402,7 +381,7 @@ static void vib_mod_exit(void)
 {
 	VIB_DEBUG("MediaTek MTK vibrator driver unregister, version %s\n",
 		  VERSION);
-  	input_unregister_device(ff_dev); 
+  	input_unregister_device(ff_inuse); 
 	if (vibrator_queue)
 		destroy_workqueue(vibrator_queue);
 	VIB_DEBUG("vib_mod_exit Done\n");

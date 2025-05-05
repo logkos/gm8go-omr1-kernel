@@ -83,7 +83,7 @@
 #define FGD_CHECK_VERSION 0x100001
 
 #define MAX_BAT_PROCLOG_LEN 4096
-#define BAT_PSEUDO_THREAD
+#define BAT_PSEUDO_THREAD 1
 
 
 /* ============================================================ */
@@ -195,7 +195,7 @@ static DEFINE_MUTEX(gm_notify_mutex);
 
 
 
-static bool gDisableGM30;
+static bool gDisableGM30 = false;
 static bool cmd_disable_nafg;
 static bool ntc_disable_nafg;
 static bool bis_evb;
@@ -801,7 +801,7 @@ static struct battery_data battery_main = {
 	.BAT_HEALTH = POWER_SUPPLY_HEALTH_GOOD,
 	.BAT_PRESENT = 1,
 	.BAT_TECHNOLOGY = POWER_SUPPLY_TECHNOLOGY_LION,
-	.BAT_CAPACITY = -1,
+	.BAT_CAPACITY = 50,
 	.BAT_batt_vol = 0,
 	.BAT_batt_temp = 0,
 	/* Dual battery */

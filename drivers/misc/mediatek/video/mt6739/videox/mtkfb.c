@@ -1004,7 +1004,7 @@ static int mtkfb_set_par(struct fb_info *fbi)
 	session_input->session_id = session_id;
 
 	if (!is_DAL_Enabled()) {
-		DISPCHECK("AEE is not enabled, will disable layer 3\n");
+		//DISPCHECK("AEE is not enabled, will disable layer 3\n");
 		input = &session_input->config[session_input->config_layer_num++];
 		input->layer_id = primary_display_get_option("ASSERT_LAYER");
 		input->layer_enable = 0;
@@ -2646,7 +2646,7 @@ static void mtkfb_early_suspend(void)
 
 	/* mt65xx_leds_brightness_set(MT65XX_LED_TYPE_LCD, LED_OFF); */
 
-	msleep(30);
+	msleep(300);
 
 	ret = primary_display_suspend();
 

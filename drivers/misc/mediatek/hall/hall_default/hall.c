@@ -150,14 +150,14 @@ static int hall_probe(struct platform_device *dev)
 	
 	HALL_FUNC();
 
-/* Vanzo:yangbinbin on: Mon, 24 Oct 2016 16:22:41 +0800
- * TODO: replace this line with your comment
+ Vanzo:yangbinbin on: Mon, 24 Oct 2016 16:22:41 +0800
+// * TODO: replace this line with your comment
 	mt_set_gpio_mode(GPIO_HALL_1_PIN, 0);
 	mt_set_gpio_dir(GPIO_HALL_1_PIN, GPIO_DIR_IN);
 	mt_set_gpio_pull_enable(GPIO_HALL_1_PIN, GPIO_PULL_DISABLE);
 	curr_state = mt_get_gpio_in(GPIO_HALL_1_PIN);
 	printk("%s line %d curr_state %d\n",__func__,__LINE__, curr_state);
- */
+ 
 // End of Vanzo: yangbinbin
 
     hallctrl = devm_pinctrl_get(&dev->dev);    
@@ -257,7 +257,7 @@ static int hall_mod_init(void)
 {
 
 	HALL_FUNC();
-/*    
+    
     retval = platform_device_register(&hall_device);
     printk("register hall device\n");
 
@@ -269,7 +269,7 @@ static int hall_mod_init(void)
     {
       printk("platform_device_register hall done!\n");
     }
-*/	
+	
 	if(platform_driver_register(&hall_driver) != 0)
 	{
 		HALL_DEBUG("unable to register hall driver\n");

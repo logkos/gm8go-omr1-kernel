@@ -13,8 +13,8 @@
 
 #include "tpd.h"
 
-unsigned long TPD_RES_X = 480;
-unsigned long TPD_RES_Y = 800;
+unsigned long TPD_RES_X = 720;
+unsigned long TPD_RES_Y = 1440;
 
 /* #if (defined(TPD_HAVE_CALIBRATION) && !defined(TPD_CUSTOM_CALIBRATION)) */
 int tpd_calmat[8] = { 0 };
@@ -41,8 +41,8 @@ module_param_array(tpd_firmware_version, int, &tpd_firmware_version_size, 0444);
 
 int tpd_mode = TPD_MODE_NORMAL;
 int tpd_mode_axis;
-int tpd_mode_min = 400;		/* TPD_RES_Y/2; */
-int tpd_mode_max = 800;		/* TPD_RES_Y; */
+int tpd_mode_min = 720;		/* TPD_RES_Y/2; */
+int tpd_mode_max = 1440;		/* TPD_RES_Y; */
 int tpd_mode_keypad_tolerance = 480 * 480 / 1600;	/* TPD_RES_X*TPD_RES_X/1600; */
 module_param(tpd_mode, int, 0664);
 module_param(tpd_mode_axis, int, 0664);

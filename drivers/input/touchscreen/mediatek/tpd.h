@@ -33,7 +33,7 @@
 /*debug macros */
 #define TPD_DEBUG
 #define TPD_DEBUG_CODE
-/* #define TPD_DEBUG_TRACK */
+//#define TPD_DEBUG_TRACK 
 #define TPD_DMESG(a, arg...) pr_info(TPD_DEVICE ": " a, ##arg)
 #if defined(TPD_DEBUG)
 #undef TPD_DEBUG
@@ -44,8 +44,8 @@
 
 /* register, address, configurations */
 #define TPD_DEVICE            "mtk-tpd"
-#define TPD_X                  0
-#define TPD_Y                  1
+#define TPD_X                  720
+#define TPD_Y                  1440
 #define TPD_Z1                 2
 #define TPD_Z2                 3
 #define TP_DELAY              (2*HZ/100)
@@ -54,7 +54,7 @@
 #define TPD_VIRTUAL_KEY_MAX   (10)
 
 /* various mode */
-#define TPD_MODE_NORMAL        0
+#define TPD_MODE_NORMAL        1
 #define TPD_MODE_KEYPAD        1
 #define TPD_MODE_SW 2
 #define TPD_MODE_FAV_SW 3
@@ -169,7 +169,7 @@ extern const struct of_device_id touch_of_match[];
 #ifdef TPD_DEBUG_TRACK
 int DAL_Clean(void);
 int DAL_Printf(const char *fmt, ...);
-int LCD_LayerEnable(int id, BOOL enable);
+int LCD_LayerEnable(int id, bool enable);
 #endif
 
 #ifdef TPD_HAVE_CALIBRATION

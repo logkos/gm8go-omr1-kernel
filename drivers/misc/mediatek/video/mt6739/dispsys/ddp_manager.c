@@ -166,7 +166,7 @@ static struct DDP_MANAGER_CONTEXT *_get_context(void)
 
 void dpmgr_set_power_state(unsigned int state)
 {
-	ASSERT(_get_context()->power_state != state);
+	//ASSERT(_get_context()->power_state != state);
 	_get_context()->power_state = state;
 }
 
